@@ -369,7 +369,7 @@
   <div class="stripe-logo">stripe</div>
   <h1>Stripe fiók létrehozása</h1>
   <p>Lépésről lépésre útmutató online fizetések fogadásához — kifejezetten a <span class="brand">PetBazar</span> webáruház üzemeltetői számára.</p>
-  <div class="petbazar-tag">🐾 <span class="brand">PetBazar</span> · <span class="brand-domain">petbazar.hu</span></div>
+  <div class="petbazar-tag">🛍️ <span class="brand">PetBazar</span> · <span class="brand-domain">petbazar.hu</span></div>
   <div class="meta">
     Készítette: Zengo Digital &nbsp;·&nbsp; 2026 április &nbsp;·&nbsp; Belső dokumentáció
   </div>
@@ -481,7 +481,7 @@
       <p>Kattints a <strong>Continue</strong> gombra.</p>
       <img class="img-real"
            src="screenshots/Screenshot_from_2026-04-30_08-55-57.png"
-           alt="Stripe — Tell us more about your business, petbazar.hu weboldal és tevékenység">
+           alt="" data-alt-tpl="Stripe — Tell us more about your business, {domain} weboldal és tevékenység">
     </div>
   </div>
 
@@ -914,6 +914,9 @@
     document.querySelectorAll('.brand').forEach(function (el) { el.textContent = display; });
     document.querySelectorAll('.brand-upper').forEach(function (el) { el.textContent = upper; });
     document.querySelectorAll('.brand-domain').forEach(function (el) { el.textContent = domain; });
+    document.querySelectorAll('[data-alt-tpl]').forEach(function (el) {
+      el.alt = el.getAttribute('data-alt-tpl').replace(/\{brand\}/g, display).replace(/\{domain\}/g, domain);
+    });
   })();
 </script>
 </body>
