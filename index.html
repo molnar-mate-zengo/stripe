@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stripe fiók létrehozása – Útmutató</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 16px;
+      color: #1a1a2e;
+      background: #f1f5f9;
+      line-height: 1.7;
+    }
+
+    /* ── STICKY NAV ── */
+    .topnav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 32px;
+      height: 52px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .topnav .nav-brand {
+      font-weight: 800;
+      color: #635bff;
+      font-size: 15px;
+      margin-right: 16px;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+
+    .topnav a {
+      text-decoration: none;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .topnav a:hover { background: #f1f5f9; color: #635bff; }
+
+    /* ── HERO ── */
+    .cover {
+      background: linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+      color: white;
+      text-align: center;
+      padding: 80px 40px 72px;
+    }
+
+    .cover .stripe-logo {
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: white;
+      color: #635bff;
+      padding: 14px 36px;
+      border-radius: 14px;
+      display: inline-block;
+    }
+
+    .cover h1 {
+      font-size: 38px;
+      font-weight: 700;
+      margin-top: 36px;
+      margin-bottom: 16px;
+    }
+
+    .cover p {
+      font-size: 18px;
+      opacity: 0.88;
+      max-width: 540px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .cover .petbazar-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 24px;
+      padding: 8px 24px;
+      font-size: 15px;
+      margin-top: 28px;
+    }
+
+    .cover .meta {
+      margin-top: 48px;
+      font-size: 14px;
+      opacity: 0.65;
+      border-top: 1px solid rgba(255,255,255,0.25);
+      padding-top: 24px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── CONTENT WRAPPER ── */
+    .content {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 64px 56px;
+      background: white;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      background: linear-gradient(135deg, #635bff 0%, #4f46e5 100%);
+      color: white;
+      padding: 13px 24px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+      margin-top: 64px;
+    }
+
+    .section-header:first-child { margin-top: 0; }
+
+    /* ── STEP ── */
+    .step {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 52px;
+      padding: 28px;
+      border-radius: 12px;
+      transition: background 0.15s;
+    }
+
+    .step:hover { background: #fafafa; }
+
+    .step-number {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      background: #635bff;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      margin-top: 2px;
+      box-shadow: 0 2px 8px rgba(99,91,255,0.35);
+    }
+
+    .step-body { flex: 1; min-width: 0; }
+
+    .step-body h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 10px;
+    }
+
+    .step-body p {
+      color: #444;
+      margin-bottom: 14px;
+      line-height: 1.75;
+    }
+
+    .step-body ul {
+      margin: 10px 0 14px 22px;
+      color: #444;
+    }
+
+    .step-body ul li { margin-bottom: 6px; line-height: 1.65; }
+
+    /* ── IMAGES ── */
+    .img-real {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      margin-top: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.09);
+      cursor: zoom-in;
+      transition: box-shadow 0.2s;
+    }
+
+    .img-real:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+
+    /* ── CALLOUT ── */
+    .callout {
+      border-left: 4px solid #635bff;
+      background: #f5f3ff;
+      border-radius: 0 10px 10px 0;
+      padding: 14px 20px;
+      margin: 14px 0;
+      color: #3730a3;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .callout.warning {
+      border-left-color: #f59e0b;
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .callout.success {
+      border-left-color: #10b981;
+      background: #ecfdf5;
+      color: #065f46;
+    }
+
+    /* ── CODE ── */
+    code {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      padding: 2px 8px;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-size: 14px;
+      color: #4f46e5;
+    }
+
+    /* ── CHECKLIST ── */
+    .checklist {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin: 24px 0;
+    }
+
+    .checklist h4 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 20px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid #e9ecef;
+      font-size: 16px;
+      color: #374151;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .checklist-item:last-child { border-bottom: none; }
+
+    .checklist-item.done { color: #9ca3af; text-decoration: line-through; }
+
+    .checklist-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #635bff;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── DIVIDER ── */
+    hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 56px 0;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 72px;
+      padding-top: 28px;
+      border-top: 2px solid #635bff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 14px;
+      color: #888;
+    }
+
+    .footer strong { color: #635bff; }
+
+    /* ── BACK TO TOP ── */
+    .back-to-top {
+      display: block;
+      text-align: center;
+      margin-top: 36px;
+      color: #635bff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .back-to-top:hover { text-decoration: underline; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      background: #635bff;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 12px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .badge.green { background: #10b981; }
+    .badge.orange { background: #f59e0b; color: #1a1a2e; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .content { padding: 36px 20px; }
+      .topnav { padding: 0 16px; }
+      .cover { padding: 56px 24px 48px; }
+      .cover h1 { font-size: 28px; }
+      .step { padding: 16px; gap: 16px; }
+      .footer { flex-direction: column; text-align: center; }
+    }
+
+    /* ── PRINT ── */
+    @media print {
+      .topnav, .back-to-top { display: none; }
+      body { background: white; font-size: 12px; }
+      .content { box-shadow: none; padding: 24px; }
+      .step { page-break-inside: avoid; }
+      @page { margin: 18mm 15mm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+
+<a id="top" style="position:absolute;top:0;left:0;"></a>
+
+<!-- STICKY NAV -->
+<nav class="topnav">
+  <span class="nav-brand">stripe</span>
+  <a href="#reg">1. Regisztráció</a>
+  <a href="#setup">2. Fiók beállítása</a>
+  <a href="#dashboard">3. Dashboard</a>
+  <a href="#live">4. Aktiválás</a>
+  <a href="#woo">5. WooCommerce</a>
+  <a href="#checklist">✅ Ellenőrzőlista</a>
+  <a href="#tips">Tippek</a>
+</nav>
+
+<!-- BORÍTÓLAP -->
+<div class="cover">
+  <div class="stripe-logo">stripe</div>
+  <h1>Stripe fiók létrehozása</h1>
+  <p>Lépésről lépésre útmutató online fizetések fogadásához — kifejezetten a <span class="brand">PetBazar</span> webáruház üzemeltetői számára.</p>
+  <div class="petbazar-tag">🐾 <span class="brand">PetBazar</span> · <span class="brand-domain">petbazar.hu</span></div>
+  <div class="meta">
+    Készítette: Zengo Digital &nbsp;·&nbsp; 2026 április &nbsp;·&nbsp; Belső dokumentáció
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ══════════════════════════════════════
+       1. RÉSZ — REGISZTRÁCIÓ
+  ══════════════════════════════════════ -->
+  <div class="section-header" id="reg">1. rész — Regisztráció</div>
+
+  <!-- LÉPÉS 1 -->
+  <div class="step">
+    <div class="step-number">1</div>
+    <div class="step-body">
+      <h3>Nyisd meg a Stripe regisztrációs oldalt</h3>
+      <p>A böngészőben navigálj a következő címre:</p>
+      <p><code>https://dashboard.stripe.com/register</code></p>
+      <div class="callout">
+        Javasolt böngésző: Google Chrome vagy Mozilla Firefox. Fontos, hogy saját e-mail fiókot használj — a Stripe fiók az e-mail címedhez lesz kötve.
+      </div>
+      <img class="img-real"
+           src="screenshots/stripe_register.png"
+           alt="Stripe — Create your Stripe account regisztrációs ablak">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 2 -->
+  <div class="step">
+    <div class="step-number">2</div>
+    <div class="step-body">
+      <h3>Töltsd ki a regisztrációs adatokat</h3>
+      <p>Az alábbi mezőket kell kitölteni:</p>
+      <ul>
+        <li><strong>Email address</strong> — a vállalkozáshoz tartozó e-mail cím</li>
+        <li><strong>Full name</strong> — a teljes neved</li>
+        <li><strong>Country</strong> — Hungary (automatikusan kitöltve, ha Magyarországról töltöd be)</li>
+        <li><strong>Password</strong> — minimum 8 karakter</li>
+      </ul>
+      <div class="callout warning">
+        ⚠️ Az e-mail cím és a név nem könnyen módosítható utólag. Adj meg helyes adatokat!
+      </div>
+    </div>
+  </div>
+
+  <!-- LÉPÉS 3 -->
+  <div class="step">
+    <div class="step-number">3</div>
+    <div class="step-body">
+      <h3>Kattints a "Create account" gombra</h3>
+      <p>Az adatok kitöltése után kattints a kék <strong>Create account</strong> gombra. Alternatívaként használhatod a <strong>Sign up with Google</strong> opciót is, ha Gmail fiókot szeretnél használni — ez esetben jelszót nem kell megadni.</p>
+      <p>Stripe küld egy e-mail megerősítő üzenetet a megadott e-mail címre.</p>
+      <img class="img-real"
+           src="screenshots/stripe_register.png"
+           alt="Stripe — Create account gomb az űrlap alján">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 4 -->
+  <div class="step">
+    <div class="step-number">4</div>
+    <div class="step-body">
+      <h3>E-mail megerősítés</h3>
+      <p>A rendszer felkér az e-mail cím megerősítésére. Kattints az <strong>„Open Gmail"</strong> gombra (vagy nyisd meg a leveleződet), és keresd a Stripe levelet — abban kattints a megerősítő linkre.</p>
+      <div class="callout">
+        Ha nem érkezett meg pár percen belül, kattints a <strong>Resend email</strong> gombra. Ellenőrizd a Spam mappát is.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-32-09.png"
+           alt="Stripe — Verify your email dialog">
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════
+       2. RÉSZ — FIÓK BEÁLLÍTÁSA
+  ══════════════════════════════════════ -->
+  <div class="section-header" id="setup">2. rész — Fiók beállítása</div>
+
+  <!-- LÉPÉS 5 -->
+  <div class="step">
+    <div class="step-number">5</div>
+    <div class="step-body">
+      <h3>Vállalkozás neve és országa</h3>
+      <p>Az e-mail megerősítés után a Stripe egy rövid beállítási varázslót indít. Az első lépésben add meg:</p>
+      <ul>
+        <li><strong>Business name</strong> — a vállalkozásod neve (pl. <em><span class="brand">PetBazar</span></em>)</li>
+        <li><strong>Business location</strong> — válaszd: <strong>Hungary</strong></li>
+      </ul>
+      <p>Ezután kattints a <strong>Continue</strong> gombra.</p>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_08-50-22.png"
+           alt="Stripe — Welcome to Stripe, Business name és Hungary">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 6 -->
+  <div class="step">
+    <div class="step-number">6</div>
+    <div class="step-body">
+      <h3>Weboldal és tevékenység leírása</h3>
+      <p>A következő képernyőn a Stripe jobban meg szeretné ismerni a vállalkozásodat:</p>
+      <ul>
+        <li><strong>Business website</strong> — add meg: <code>https://<span class="brand-domain">petbazar.hu</span></code></li>
+        <li><strong>What type of business are you and what do you offer?</strong> — írj egy rövid leírást, pl. <em>„Táp árusítás állatok részére"</em> vagy <em>„Kisállat-felszerelések és eledel online értékesítése"</em></li>
+      </ul>
+      <p>Kattints a <strong>Continue</strong> gombra.</p>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_08-55-57.png"
+           alt="Stripe — Tell us more about your business, petbazar.hu weboldal és tevékenység">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 7 -->
+  <div class="step">
+    <div class="step-number">7</div>
+    <div class="step-body">
+      <h3>Stripe ajánlása: egyszeri fizetések</h3>
+      <p>A megadott adatok alapján a Stripe automatikusan ajánlja a legjobb fizetési megoldást. Webshop esetén ez a <strong>Non-recurring payments</strong> (egyszeri, nem ismétlődő fizetések) lesz — ez pontosan az, amire szükség van.</p>
+      <p>Kattints a <strong>Continue</strong> gombra.</p>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_08-56-09.png"
+           alt="Stripe — Recommendations: Non-recurring payments kiválasztva">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 8 -->
+  <div class="step">
+    <div class="step-number">8</div>
+    <div class="step-body">
+      <h3>Egyéb funkciók (opcionális)</h3>
+      <p>A Stripe megkérdezi, szeretnél-e más funkciókat is használni. A webshop alapbeállításához elegendő a <strong>Non-recurring payments</strong> bejelölve hagyása. A többi opciót most kihagyhatod — bármikor bekapcsolható később.</p>
+      <div class="callout">
+        <strong>Tipp:</strong> A <em>„Use Stripe through another software platform"</em> opciót NE jelöld be — a WooCommerce integrációhoz nem erre van szükség.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_08-56-40.png"
+           alt="Stripe — Are there other ways you want to use Stripe? opciók listája">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 9 -->
+  <div class="step">
+    <div class="step-number">9</div>
+    <div class="step-body">
+      <h3>Sandbox (tesztkörnyezet) bevezető</h3>
+      <p>A varázslat végén a Stripe bemutatja a <strong>Sandbox</strong> (tesztkörnyezet) koncepcióját. Ez egy biztonságos tesztelési felület — itt valódi pénz nem mozog. Az éles fizetések fogadásához később kell „live" módra váltani.</p>
+      <p>Kattints a <strong>Go to sandbox</strong> gombra.</p>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_08-56-47.png"
+           alt="Stripe — Get started in your sandbox bevezető képernyő">
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════
+       3. RÉSZ — DASHBOARD MEGISMERÉSE
+  ══════════════════════════════════════ -->
+  <div class="section-header" id="dashboard">3. rész — A Stripe Dashboard</div>
+
+  <!-- LÉPÉS 10 -->
+  <div class="step">
+    <div class="step-number">10</div>
+    <div class="step-body">
+      <h3>A Dashboard főoldala</h3>
+      <p>A Stripe vezérlőpultja (Dashboard) itt található: <code>dashboard.stripe.com</code></p>
+      <p>Amit érdemes megismerni:</p>
+      <ul>
+        <li><strong>Sandbox / Live mód</strong> — a bal felső sarokban váltható; tesztelni mindig Sandbox módban</li>
+        <li><strong>HUF balance</strong> — az egyenleg forintban jelenik meg</li>
+        <li><strong>Payouts</strong> — a bankszámlára való kifizetések</li>
+        <li><strong>API keys</strong> — a jobb oldalsávban láthatók a kulcsok (WooCommerce integrációhoz szükséges)</li>
+      </ul>
+      <div class="callout success">
+        ✅ A Dashboardon látható API keys szekció mutatja a <strong>Publishable key</strong> és <strong>Secret key</strong> értékeket — ezekre a WooCommerce összekötésnél lesz szükség.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-27-12.png"
+           alt="Stripe Dashboard — főoldal, HUF balance, API keys szekció">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 11 -->
+  <div class="step">
+    <div class="step-number">11</div>
+    <div class="step-body">
+      <h3>Fizetési mód beállítása (Setup guide)</h3>
+      <p>A Dashboard jobb oldalán megjelenik a <strong>Setup guide</strong> panel. Ez végigvezet a legfontosabb beállításokon. Az első lépés: <strong>„Choose how to accept payments"</strong> — itt megadhatod, milyen módon szeretnél fizetést fogadni (pl. checkout oldal, fizetési link).</p>
+      <div class="callout">
+        Webshophoz a <strong>Prebuilt checkout form</strong> opció a legegyszerűbb — a WooCommerce Stripe plugin ezt automatikusan kezeli.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-27-28.png"
+           alt="Stripe — How do you want to accept payments? modal ablak">
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════
+       4. RÉSZ — ÉLES FIÓK AKTIVÁLÁSA
+  ══════════════════════════════════════ -->
+  <div class="section-header" id="live">4. rész — Éles fiók aktiválása (valódi fizetésekhez)</div>
+
+  <!-- LÉPÉS 12 -->
+  <div class="step">
+    <div class="step-number">12</div>
+    <div class="step-body">
+      <h3>Váltás Live módra</h3>
+      <p>Amikor készen állsz az éles fizetések fogadására, kattints a Dashboard jobb felső sarkában lévő <strong>„Switch to live account"</strong> gombra. Ez elindítja az aktiválási varázslót.</p>
+      <div class="callout warning">
+        ⚠️ Készítsd elő: vállalkozás adatai, bankszámlaszám (IBAN), és személyigazolvány / útlevél.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-27-12.png"
+           alt="Stripe Dashboard — Switch to live account gomb jobb felső sarokban">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 13 -->
+  <div class="step">
+    <div class="step-number">13</div>
+    <div class="step-body">
+      <h3>Vállalkozás típusa és helyszíne</h3>
+      <p>Az aktiválás első lépése: add meg a vállalkozás típusát.</p>
+      <ul>
+        <li><strong>Business location</strong> — Hungary</li>
+        <li><strong>Business type</strong> — válaszd a megfelelőt:
+          <ul>
+            <li><em>Korlátolt felelősségű egyéni cég / Egyéni vállalkozó</em> — ha egyéni vállalkozóként működsz</li>
+            <li><em>Korlátolt felelősségű társaság (Kft.)</em> — ha céged van</li>
+          </ul>
+        </li>
+      </ul>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-49-09.png"
+           alt="Stripe aktiválás — Business type: Hungary, Egyéni vállalkozó">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 14 -->
+  <div class="step">
+    <div class="step-number">14</div>
+    <div class="step-body">
+      <h3>Személyes adatok megadása</h3>
+      <p>Add meg a saját személyes adataidat (nem a vállalkozásét):</p>
+      <ul>
+        <li><strong>Legal name</strong> — teljes jogi neved, ahogy az okmányon szerepel</li>
+        <li><strong>Email address</strong> — előre kitöltve a regisztrációs e-maillel</li>
+        <li><strong>Date of birth</strong> — születési dátum (MM/DD/YYYY formátumban)</li>
+        <li><strong>Home address</strong> — magyarországi lakcím (város, utca, irányítószám)</li>
+        <li><strong>Phone number</strong> — magyar telefonszám (+36 előhívóval)</li>
+      </ul>
+      <div class="callout warning">
+        ⚠️ Valós, okmánnyal egyező adatokat adj meg — a Stripe ezeket ellenőrzi.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-50-20.png"
+           alt="Stripe aktiválás — Verify your personal details: név, e-mail, születési dátum, cím">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 15 -->
+  <div class="step">
+    <div class="step-number">15</div>
+    <div class="step-body">
+      <h3>Termékek és szolgáltatások</h3>
+      <p>Ebben a lépésben meg kell adni, mit árulsz a Stripe-on keresztül:</p>
+      <ul>
+        <li><strong>Category</strong> — válaszd a legmegfelelőbbet, pl. <em>Retail</em> vagy <em>Pet stores</em></li>
+        <li><strong>Description</strong> — rövid leírás, pl. <em>„Kisállat-eledelek és felszerelések online értékesítése"</em></li>
+      </ul>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-51-46.png"
+           alt="Stripe aktiválás — What products or services will you offer: Category és Description mezők">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 16 -->
+  <div class="step">
+    <div class="step-number">16</div>
+    <div class="step-body">
+      <h3>Nyilvános adatok (Statement descriptor)</h3>
+      <p>Ezek az adatok megjelenhetnek az ügyfelek bankkivonatán és számláin:</p>
+      <ul>
+        <li><strong>Statement descriptor</strong> — max. 22 karakter, pl. <em><span class="brand-upper">PETBAZAR</span></em> — ez jelenik meg az ügyfelek bankszámlakivonatán</li>
+        <li><strong>Customer support phone number</strong> — ügyfélszolgálati telefonszám</li>
+        <li><strong>Customer support email / website</strong> — opcionálisan</li>
+      </ul>
+      <div class="callout">
+        A Statement descriptor legyen felismerhető a vállalkozás neve alapján — ez segít megelőzni a visszaterheléseket (chargeback).
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-52-46.png"
+           alt="Stripe aktiválás — Add public details: Statement descriptor és Customer support">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 17 -->
+  <div class="step">
+    <div class="step-number">17</div>
+    <div class="step-body">
+      <h3>Bankszámla hozzáadása (kifizetésekhez)</h3>
+      <p>Add meg azt a bankszámlát, amelyre a Stripe a bevételeket utalja:</p>
+      <ul>
+        <li><strong>Currency</strong> — HUF – Hungarian Forint (automatikusan kitöltve)</li>
+        <li><strong>IBAN</strong> — a vállalkozói bankszámla IBAN száma (HU42... kezdetű, 28 karakter)</li>
+        <li><strong>Confirm IBAN</strong> — add meg mégegyszer ellenőrzésként</li>
+        <li><strong>Payout schedule</strong> — válaszd: <em>Manual</em> (manuálisan utalsz magadnak) vagy <em>Automatic every week</em></li>
+      </ul>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-55-35.png"
+           alt="Stripe aktiválás — Add an account for payouts: HUF, IBAN, kifizetési ütemezés">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 18 -->
+  <div class="step">
+    <div class="step-number">18</div>
+    <div class="step-body">
+      <h3>Kétlépéses azonosítás (2FA)</h3>
+      <p>A Stripe kötelezővé teszi a kétlépéses azonosítást a fiók biztonsága érdekében. Két lehetőség:</p>
+      <ul>
+        <li><strong>Add security key</strong> — fizikai biztonsági kulcs (pl. YubiKey) — legbiztonságosabb</li>
+        <li><strong>Add authenticator app</strong> — hitelesítő alkalmazás (pl. Google Authenticator, Authy) — ajánlott</li>
+      </ul>
+      <div class="callout">
+        Ajánlott az <strong>Authenticator app</strong> opció — telepítsd a Google Authenticator vagy Authy appot a telefonodon, majd szkenneld be a QR-kódot.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-55-46.png"
+           alt="Stripe aktiválás — Keep your account secure: Two-step authentication beállítás">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 19 — OPCIONÁLIS -->
+  <div class="step">
+    <div class="step-number">19</div>
+    <div class="step-body">
+      <h3>Adókezelés — opcionális</h3>
+      <p>A Stripe felajánlja az automatikus adóbevallás-segítést. Ez egy opcionális funkció — a <span class="brand">PetBazar</span> esetén egyelőre <strong>kihagyható</strong> (kattints: <em>Skip for now</em>).</p>
+      <div class="callout">
+        Ha később szükség lesz rá, a Dashboard → Settings → Tax menüpontban bármikor bekapcsolható.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-55-57.png"
+           alt="Stripe aktiválás — Automate tax collection: opcionális, Skip for now">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 20 — OPCIONÁLIS -->
+  <div class="step">
+    <div class="step-number">20</div>
+    <div class="step-body">
+      <h3>Klíma hozzájárulás — opcionális</h3>
+      <p>A Stripe lehetőséget ad arra, hogy a bevétel egy kis hányadát (0,5%–1,5%) szén-megkötési projektekre fordítsd. Ez teljes mértékben <strong>opcionális és kihagyható</strong>.</p>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-56-07.png"
+           alt="Stripe aktiválás — Show customers your climate commitment: opcionális beállítás">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 21 -->
+  <div class="step">
+    <div class="step-number">21</div>
+    <div class="step-body">
+      <h3>Összefoglalás és beküldés</h3>
+      <p>Az utolsó lépésben a Stripe összefoglalja az összes megadott adatot. Ellenőrizd, hogy minden adat helyes, majd kattints a <strong>Submit</strong> gombra.</p>
+      <div class="callout warning">
+        ⚠️ Ha bármely szekció <span style="color:#dc2626;font-weight:700;">Incomplete</span> jelöléssel rendelkezik, azt előbb ki kell tölteni — a Submit gomb csak akkor aktiválódik, ha minden rész kész.
+      </div>
+      <div class="callout success">
+        ✅ A beküldés után a Stripe 1–3 munkanapot vesz igénybe az elbíráláshoz. E-mailben értesít az eredményről, és a fiók Live módba vált.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-56-29.png"
+           alt="Stripe aktiválás — Review and submit: összefoglaló oldal Business details, Products, Public details">
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ══════════════════════════════════════
+       5. RÉSZ — WOOCOMMERCE ÖSSZEKÖTÉS
+  ══════════════════════════════════════ -->
+  <div class="section-header" id="woo">5. rész — WooCommerce összekötés</div>
+
+  <!-- LÉPÉS 22 -->
+  <div class="step">
+    <div class="step-number">22</div>
+    <div class="step-body">
+      <h3>API kulcsok megszerzése</h3>
+      <p>A WooCommerce integrációhoz szükség van a Stripe API kulcsokra. A Dashboard főoldalán a <strong>API keys</strong> szekcióban láthatók, vagy megtalálhatók itt:</p>
+      <p><strong>Developers → API keys</strong></p>
+      <ul>
+        <li><strong>Publishable key</strong> — <code>pk_live_...</code> — nyilvános kulcs</li>
+        <li><strong>Secret key</strong> — <code>sk_live_...</code> — titkos kulcs</li>
+      </ul>
+      <div class="callout warning">
+        ⚠️ A Secret key-t azonnal mentsd el biztonságos helyre. Ha elveszíted, újat kell generálni.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_09-27-12.png"
+           alt="Stripe Dashboard — API keys szekció: Publishable key és Secret key">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 23 -->
+  <div class="step">
+    <div class="step-number">23</div>
+    <div class="step-body">
+      <h3>Stripe megkeresése a WooCommerce fizetési módok között</h3>
+      <p>A WordPress adminon navigálj ide: <strong>WooCommerce → Beállítások → Fizetési módok</strong></p>
+      <p>Az oldalon görgess le a <em>„További fizetési lehetőségek"</em> szekcióhoz — ott találod a <strong>Stripe</strong> sort. Kattints a <strong>Beállítás módosítása</strong> gombra.</p>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_10-22-04.png"
+           alt="WooCommerce Fizetési módok — Stripe sor kiemelve a listában">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 24 -->
+  <div class="step">
+    <div class="step-number">24</div>
+    <div class="step-body">
+      <h3>Stripe fiók összekapcsolása</h3>
+      <p>A Stripe beállítási oldalán a plugin bemutatja a WooCommerce ↔ Stripe integrációt. Kattints a kék <strong>„Hozzon létre vagy csatlakozzon egy fiókot"</strong> gombra.</p>
+      <div class="callout">
+        Ha már van Stripe fiókod (amit a korábbi lépésekben hoztál létre), a „csatlakozás" opciót válaszd — nem kell új fiókot nyitni.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_10-22-23.png"
+           alt="WooCommerce → Stripe beállítás — Kezdje el a Stripe-ot oldal, csatlakozás gomb">
+    </div>
+  </div>
+
+  <!-- LÉPÉS 25 -->
+  <div class="step">
+    <div class="step-number">25</div>
+    <div class="step-body">
+      <h3>Bejelentkezés a Stripe fiókba</h3>
+      <p>A WooCommerce átirányít a Stripe OAuth kapcsolódási oldalára. Add meg a Stripe fiókhoz tartozó <strong>e-mail címet</strong>, majd kattints a <strong>Continue</strong> gombra. Ezt követően add meg a jelszót.</p>
+      <div class="callout success">
+        ✅ Sikeres bejelentkezés után a WooCommerce automatikusan bekéri a szükséges engedélyeket, és összekapcsolja a két fiókot. A Stripe fizetési mód ezután aktív lesz a webshopban.
+      </div>
+      <img class="img-real"
+           src="screenshots/Screenshot_from_2026-04-30_10-22-58.png"
+           alt="WooCommerce Inc. ↔ Stripe OAuth kapcsolat — Get started with Stripe, e-mail mező">
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ELLENŐRZŐLISTA -->
+  <div class="checklist" id="checklist">
+    <h4>✅ Ellenőrzőlista — minden kész?</h4>
+    <label class="checklist-item"><input type="checkbox"><span>Stripe fiók létrehozva és e-mail megerősítve</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>Vállalkozás neve és országa megadva (Hungary)</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>Weboldal (<span class="brand-domain">petbazar.hu</span>) és tevékenység leírása megadva</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>Live módra váltva és KYC adatok megadva</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>Bankszámla hozzáadva (IBAN)</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>Kétlépéses azonosítás (2FA) beállítva</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>Személyazonosság igazolva, Stripe aktiválás jóváhagyva</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>Live API kulcsok lementve biztonságos helyre</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>WooCommerce Stripe plugin bekonfigurálva</span></label>
+    <label class="checklist-item"><input type="checkbox"><span>Tesztfizetés elvégezve (teszt kártya: <code>4242 4242 4242 4242</code>)</span></label>
+  </div>
+
+  <hr>
+
+  <!-- HASZNOS TIPPEK -->
+  <div class="section-header" id="tips">Hasznos tippek</div>
+
+  <div class="callout">
+    <strong>Teszt kártyaszám:</strong> <code>4242 4242 4242 4242</code> — bármilyen jövőbeli lejárati dátum, bármilyen CVC. Sandbox módban valódi pénzmozgás nélkül tesztelhető a fizetési folyamat.
+  </div>
+  <br>
+  <div class="callout">
+    <strong>Kifizetési ütemezés:</strong> Stripe alapértelmezetten 7 napos késleltetéssel utal. A Dashboardon beállítható rövidebbre (akár 2 naposra).
+  </div>
+  <br>
+  <div class="callout warning">
+    <strong>Jutalék (2026):</strong> EU-s kártyák: <strong>1,5% + 0,25 EUR</strong> · Nem EU-s kártyák: <strong>3,25% + 0,25 EUR</strong>. Ellenőrizd a legfrissebb díjakat: stripe.com/hu/pricing
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span><span class="brand">PetBazar</span> · <span class="brand-domain">petbazar.hu</span></span>
+    <span><strong>Zengo Digital</strong> · Belső dokumentáció · 2026</span>
+    <span>stripe.com/hu</span>
+  </div>
+
+  <a class="back-to-top" href="#top">↑ Vissza a tetejére</a>
+
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;">
+  <img id="lightbox-img" style="max-width:92vw;max-height:92vh;border-radius:10px;box-shadow:0 12px 48px rgba(0,0,0,0.6);">
+  <div style="position:fixed;top:20px;right:28px;color:white;font-size:32px;cursor:pointer;line-height:1;" id="lightbox-close">✕</div>
+</div>
+
+<script>
+  // Checklist
+  document.querySelectorAll('.checklist-item input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      cb.closest('.checklist-item').classList.toggle('done', cb.checked);
+    });
+  });
+
+  // Lightbox
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lightbox-img');
+
+  document.querySelectorAll('.img-real').forEach(img => {
+    img.addEventListener('click', () => {
+      lbImg.src = img.src;
+      lb.style.display = 'flex';
+    });
+  });
+
+  lb.addEventListener('click', () => { lb.style.display = 'none'; });
+  document.getElementById('lightbox-close').addEventListener('click', () => { lb.style.display = 'none'; });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') lb.style.display = 'none';
+  });
+</script>
+
+<script>
+  (function () {
+    var params = new URLSearchParams(location.search);
+    var raw = (params.get('brand') || '').trim();
+    var rawDomain = (params.get('domain') || '').trim();
+    var fallback = 'A Te Webshopod';
+    var fallbackDomain = 'ateweboldalad.hu';
+    var display = raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : fallback;
+    var upper = (raw || fallback).toUpperCase();
+    var domain = rawDomain ? rawDomain.toLowerCase() : fallbackDomain;
+    document.querySelectorAll('.brand').forEach(function (el) { el.textContent = display; });
+    document.querySelectorAll('.brand-upper').forEach(function (el) { el.textContent = upper; });
+    document.querySelectorAll('.brand-domain').forEach(function (el) { el.textContent = domain; });
+  })();
+</script>
+</body>
+</html>
